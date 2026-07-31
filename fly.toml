@@ -2,8 +2,7 @@ app = 'call-agent-voice'
 primary_region = 'fra'
 
 [build]
-  # Prefer repo-root fly.toml for deploy (monorepo Docker context).
-  dockerfile = 'Dockerfile'
+  dockerfile = 'apps/voice/Dockerfile'
 
 [http_service]
   internal_port = 3001

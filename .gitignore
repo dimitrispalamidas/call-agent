@@ -11,3 +11,5 @@ coverage
 apps/web/.next
 apps/voice/dist
 packages/db/dist
+.vercel
+.env*
