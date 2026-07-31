@@ -1,0 +1,20 @@
+{
+  "name": "call-center-agent",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter voice dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:voice": "pnpm --filter voice dev",
+    "build": "pnpm --filter @call-agent/db build && pnpm --filter web build && pnpm --filter voice build",
+    "lint": "pnpm --filter web lint"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

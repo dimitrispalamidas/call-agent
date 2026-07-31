@@ -1,0 +1,7 @@
+project_id = "call-center-agent"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15
