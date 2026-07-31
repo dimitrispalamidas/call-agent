@@ -20,6 +20,11 @@ wss.on("connection", (ws) => {
   new CallSession(ws);
 });
 
+server.on("error", (err: NodeJS.ErrnoException) => {
+  console.error("Voice server error", err.code ?? err.message);
+  process.exit(1);
+});
+
 server.listen(config.port, () => {
   console.log(`Voice bridge listening on :${config.port} (ws path /media-stream)`);
 });

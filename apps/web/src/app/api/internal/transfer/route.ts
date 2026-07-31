@@ -64,17 +64,27 @@ export async function POST(request: Request) {
   const conferenceName = `org-${orgId}-${callSid}`;
   const transferUrl = `${appUrl}/api/twilio/transfer?conferenceName=${encodeURIComponent(conferenceName)}`;
 
-  await client.calls(callSid).update({
-    url: transferUrl,
-    method: "POST",
-  });
+  try {
+    await client.calls(callSid).update({
+      url: transferUrl,
+      method: "POST",
+    });
 
-  await client.calls.create({
-    to: employee.phone_e164,
-    from: fromNumber,
-    url: transferUrl,
-    method: "POST",
-  });
+    await client.calls.create({
+      to: employee.phone_e164,
+      from: fromNumber,
+      url: transferUrl,
+      method: "POST",
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Twilio transfer failed";
+    console.error("Twilio transfer failed", err);
+    return NextResponse.json(
+      { transferred: false, reason: "twilio_error", error: message },
+      { status: 502 },
+    );
+  }
 
   const { data: call } = await supabase
     .from("calls")

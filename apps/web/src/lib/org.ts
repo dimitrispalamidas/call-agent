@@ -20,7 +20,13 @@ export async function getUserOrganizations(): Promise<Organization[]> {
     .select("org_id")
     .eq("user_id", user.id);
 
-  if (error) throw error;
+  if (error) {
+    // Schema not migrated yet (PGRST205) or other recoverable read errors.
+    if (error.code === "PGRST205" || /Could not find the table/i.test(error.message)) {
+      return [];
+    }
+    throw error;
+  }
   const orgIds = (memberships ?? []).map((m) => m.org_id);
   if (orgIds.length === 0) return [];
 
@@ -30,8 +36,20 @@ export async function getUserOrganizations(): Promise<Organization[]> {
     .in("id", orgIds)
     .order("created_at", { ascending: true });
 
-  if (orgError) throw orgError;
+  if (orgError) {
+    if (orgError.code === "PGRST205" || /Could not find the table/i.test(orgError.message)) {
+      return [];
+    }
+    throw orgError;
+  }
   return (orgs ?? []) as Organization[];
+}
+
+export async function isDatabaseReady(): Promise<boolean> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("organizations").select("id").limit(1);
+  if (!error) return true;
+  return !(error.code === "PGRST205" || /Could not find the table/i.test(error.message));
 }
 
 export async function getOrganization(orgId: string): Promise<Organization | null> {

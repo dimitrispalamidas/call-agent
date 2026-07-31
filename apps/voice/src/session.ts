@@ -158,35 +158,42 @@ export class CallSession {
     this.openaiWs = new WebSocket(url, {
       headers: {
         Authorization: `Bearer ${config.openaiApiKey()}`,
-        "OpenAI-Beta": "realtime=v1",
       },
     });
 
     this.openaiWs.on("open", () => {
+      console.log("OpenAI realtime connected", config.realtimeModel);
       this.sendOpenAI({
         type: "session.update",
         session: {
-          modalities: ["text", "audio"],
+          type: "realtime",
+          model: config.realtimeModel,
           instructions: buildInstructions(this.org!),
-          voice: "alloy",
-          input_audio_format: "g711_ulaw",
-          output_audio_format: "g711_ulaw",
-          input_audio_transcription: { model: "whisper-1" },
-          turn_detection: {
-            type: "server_vad",
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500,
-          },
+          output_modalities: ["audio"],
           tools: TOOLS,
           tool_choice: "auto",
+          audio: {
+            input: {
+              format: { type: "audio/pcmu" },
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 500,
+              },
+            },
+            output: {
+              format: { type: "audio/pcmu" },
+              voice: "alloy",
+            },
+          },
         },
       });
 
       this.sendOpenAI({
         type: "response.create",
         response: {
-          modalities: ["text", "audio"],
+          output_modalities: ["audio"],
           instructions: `Ξεκίνα την κλήση με αυτό το greeting: ${this.org!.greeting}`,
         },
       });
@@ -196,7 +203,8 @@ export class CallSession {
       void this.onOpenAIMessage(data.toString());
     });
 
-    this.openaiWs.on("close", () => {
+    this.openaiWs.on("close", (code, reason) => {
+      console.log("OpenAI WS closed", code, reason.toString());
       void this.shutdown(this.transferred ? "transferred" : "completed");
     });
 
@@ -297,64 +305,79 @@ export class CallSession {
 
     let result: unknown = { ok: false };
 
-    switch (tool.name) {
-      case "search_knowledge_base": {
-        const query = String(args.query ?? "");
-        const results = await searchKb(this.orgId, query);
-        await logCallEvent(this.callSid, "search_knowledge_base", { query, results });
-        result = {
-          results: results.map((r) => ({
-            content: r.content,
-            similarity: r.similarity,
-          })),
-        };
-        break;
-      }
-      case "transfer_to_human": {
-        const reason = String(args.reason ?? "Customer requested human");
-        const transfer = await transferToHuman(this.orgId, this.callSid, reason);
-        result = transfer;
-        if (transfer.transferred) {
-          this.transferred = true;
+    try {
+      switch (tool.name) {
+        case "search_knowledge_base": {
+          const query = String(args.query ?? "");
+          const results = await searchKb(this.orgId, query);
+          await logCallEvent(this.callSid, "search_knowledge_base", {
+            query,
+            results,
+          });
+          result = {
+            results: results.map((r) => ({
+              content: r.content,
+              similarity: r.similarity,
+            })),
+          };
+          break;
+        }
+        case "transfer_to_human": {
+          const reason = String(args.reason ?? "Customer requested human");
+          const transfer = await transferToHuman(
+            this.orgId,
+            this.callSid,
+            reason,
+          );
+          result = transfer;
+          if (transfer.transferred) {
+            this.transferred = true;
+            this.sendOpenAI({
+              type: "response.create",
+              response: {
+                output_modalities: ["audio"],
+                instructions:
+                  "Πες σύντομα στον πελάτη ότι τον συνδέεις τώρα με συνάδελφο και μετά σταμάτα να μιλάς.",
+              },
+            });
+            setTimeout(() => {
+              void this.shutdown("transferred");
+            }, 4000);
+          } else {
+            result = {
+              ...transfer,
+              message:
+                "Δεν υπάρχει διαθέσιμος υπάλληλος. Ζήτησε τηλέφωνο επικοινωνίας για callback.",
+            };
+          }
+          break;
+        }
+        case "end_call": {
+          const summary = String(args.summary ?? "Call ended");
+          result = { ok: true };
           this.sendOpenAI({
             type: "response.create",
             response: {
-              modalities: ["text", "audio"],
-              instructions:
-                "Πες σύντομα στον πελάτη ότι τον συνδέεις τώρα με συνάδελφο και μετά σταμάτα να μιλάς.",
+              output_modalities: ["audio"],
+              instructions: "Πες ένα σύντομο ευγενικό αντίο.",
             },
           });
           setTimeout(() => {
-            void this.shutdown("transferred");
-          }, 4000);
-        } else {
-          result = {
-            ...transfer,
-            message:
-              "Δεν υπάρχει διαθέσιμος υπάλληλος. Ζήτησε τηλέφωνο επικοινωνίας για callback.",
-          };
+            void this.shutdown("completed", summary);
+          }, 2500);
+          break;
         }
-        break;
+        default: {
+          result = { error: `Unknown tool ${tool.name}` };
+          break;
+        }
       }
-      case "end_call": {
-        const summary = String(args.summary ?? "Call ended");
-        result = { ok: true };
-        this.sendOpenAI({
-          type: "response.create",
-          response: {
-            modalities: ["text", "audio"],
-            instructions: "Πες ένα σύντομο ευγενικό αντίο.",
-          },
-        });
-        setTimeout(() => {
-          void this.shutdown("completed", summary);
-        }, 2500);
-        break;
-      }
-      default: {
-        result = { error: `Unknown tool ${tool.name}` };
-        break;
-      }
+    } catch (err) {
+      console.error("Tool call failed", tool.name, err);
+      result = {
+        ok: false,
+        error: err instanceof Error ? err.message : "Tool failed",
+      };
     }
 
     this.sendOpenAI({

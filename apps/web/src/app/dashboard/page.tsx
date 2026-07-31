@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { CreateOrgForm } from "@/components/create-org-form";
+import { SchemaSetupBanner } from "@/components/schema-setup-banner";
 import { Card, PageHeader } from "@/components/ui";
-import { getUserOrganizations } from "@/lib/org";
+import { getUserOrganizations, isDatabaseReady } from "@/lib/org";
 
 export default async function DashboardPage() {
-  const orgs = await getUserOrganizations();
+  const [orgs, dbReady] = await Promise.all([
+    getUserOrganizations(),
+    isDatabaseReady(),
+  ]);
 
   return (
     <div>
@@ -12,6 +16,7 @@ export default async function DashboardPage() {
         title="Οργανισμοί"
         description="Διαχειρίσου βάσεις γνώσης, αριθμούς και υπαλλήλους ανά οργανισμό."
       />
+      {!dbReady ? <SchemaSetupBanner /> : null}
       <div className="grid gap-4 md:grid-cols-2">
         {orgs.map((org) => (
           <Card key={org.id}>
