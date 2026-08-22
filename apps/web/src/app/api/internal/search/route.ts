@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertInternalSecret } from "@/lib/authz";
-import { searchKnowledgeBase } from "@/lib/documents";
+import { searchKnowledgeBase } from "@/lib/kb-search";
 
 export async function POST(request: Request) {
   if (!assertInternalSecret(request)) {

@@ -52,7 +52,7 @@ const TOOLS = [
     type: "function",
     name: "transfer_to_human",
     description:
-      "Μεταφορά σε πραγματικό υπάλληλο όταν δεν μπορείς να καλύψεις το αίτημα ή όταν το ζητήσει ο πελάτης.",
+      "Μεταφορά σε πραγματικό υπάλληλο ΜΟΝΟ όταν ο πελάτης το ζητήσει ρητά, ή αφού το search_knowledge_base δεν βρει απάντηση και ο πελάτης συμφωνήσει.",
     parameters: {
       type: "object",
       properties: {
@@ -86,8 +86,10 @@ function buildInstructions(org: OrgPayload) {
     `Οργανισμός: ${org.name}`,
     org.system_prompt,
     `Πολιτική μεταφοράς: ${org.transfer_policy}`,
-    "Πριν απαντήσεις σε γεγονότα/πολιτικές/τιμές/ώρες, χρησιμοποίησε το tool search_knowledge_base.",
-    "Αν δεν βρεις αρκετές πληροφορίες ή ο πελάτης ζητήσει άνθρωπο, χρησιμοποίησε transfer_to_human.",
+    "Πριν απαντήσεις σε γεγονότα/πολιτικές/υπηρεσίες/τιμές/ώρες, χρησιμοποίησε ΠΑΝΤΑ το tool search_knowledge_base.",
+    "Αν το search επιστρέψει αποτελέσματα, απάντησε με βάση αυτά. ΜΗΝ καλείς transfer_to_human για συνηθισμένες FAQ ερωτήσεις.",
+    "Χρησιμοποίησε transfer_to_human ΜΟΝΟ αν (α) ο πελάτης ζητήσει ρητά άνθρωπο/υπάλληλο, ή (β) μετά από search δεν υπάρχει σχετική πληροφορία ΚΑΙ το επιβεβαιώσεις στον πελάτη.",
+    "Αν το search αποτύχει τεχνικά, πες ότι έχεις προσωρινό πρόβλημα πρόσβασης στη βάση γνώσης και ρώτα αν θέλει να δοκιμάσετε ξανά ή να μιλήσει με άνθρωπο. Μην μεταφέρεις αυτόματα.",
     "Μίλα φυσικά, σύντομα και τηλεφωνικά. Μην εφευρίσκεις στοιχεία εκτός KB.",
   ].join("\n\n");
 }
@@ -101,6 +103,7 @@ export class CallSession {
   private org: OrgPayload | null = null;
   private closed = false;
   private transferred = false;
+  private handledToolCalls = new Set<string>();
 
   constructor(twilioWs: WebSocket) {
     this.twilioWs = twilioWs;
@@ -295,6 +298,8 @@ export class CallSession {
     arguments: string;
   }) {
     if (!this.orgId || !this.callSid || !tool.call_id) return;
+    if (this.handledToolCalls.has(tool.call_id)) return;
+    this.handledToolCalls.add(tool.call_id);
 
     let args: Record<string, unknown> = {};
     try {
@@ -304,6 +309,7 @@ export class CallSession {
     }
 
     let result: unknown = { ok: false };
+    let followUpInstructions: string | null = null;
 
     try {
       switch (tool.name) {
@@ -315,6 +321,7 @@ export class CallSession {
             results,
           });
           result = {
+            ok: true,
             results: results.map((r) => ({
               content: r.content,
               similarity: r.similarity,
@@ -332,14 +339,8 @@ export class CallSession {
           result = transfer;
           if (transfer.transferred) {
             this.transferred = true;
-            this.sendOpenAI({
-              type: "response.create",
-              response: {
-                output_modalities: ["audio"],
-                instructions:
-                  "Πες σύντομα στον πελάτη ότι τον συνδέεις τώρα με συνάδελφο και μετά σταμάτα να μιλάς.",
-              },
-            });
+            followUpInstructions =
+              "Πες σύντομα στον πελάτη ότι τον συνδέεις τώρα με συνάδελφο και μετά σταμάτα να μιλάς.";
             setTimeout(() => {
               void this.shutdown("transferred");
             }, 4000);
@@ -355,13 +356,7 @@ export class CallSession {
         case "end_call": {
           const summary = String(args.summary ?? "Call ended");
           result = { ok: true };
-          this.sendOpenAI({
-            type: "response.create",
-            response: {
-              output_modalities: ["audio"],
-              instructions: "Πες ένα σύντομο ευγενικό αντίο.",
-            },
-          });
+          followUpInstructions = "Πες ένα σύντομο ευγενικό αντίο.";
           setTimeout(() => {
             void this.shutdown("completed", summary);
           }, 2500);
@@ -377,6 +372,10 @@ export class CallSession {
       result = {
         ok: false,
         error: err instanceof Error ? err.message : "Tool failed",
+        hint:
+          tool.name === "search_knowledge_base"
+            ? "Search failed. Tell the caller you had a temporary issue and answer only if you already know from prior KB results; otherwise ask if they want a human."
+            : undefined,
       };
     }
 
@@ -388,6 +387,18 @@ export class CallSession {
         output: JSON.stringify(result),
       },
     });
+
+    if (followUpInstructions) {
+      this.sendOpenAI({
+        type: "response.create",
+        response: {
+          output_modalities: ["audio"],
+          instructions: followUpInstructions,
+        },
+      });
+      return;
+    }
+
     this.sendOpenAI({ type: "response.create" });
   }
 

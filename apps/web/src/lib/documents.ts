@@ -1,7 +1,8 @@
 import { chunkText } from "@call-agent/db";
-import { PDFParse } from "pdf-parse";
 import { embedTexts } from "@/lib/openai";
 import { createServiceClient } from "@/lib/supabase/server";
+
+export { searchKnowledgeBase } from "@/lib/kb-search";
 
 async function extractText(
   buffer: Buffer,
@@ -10,6 +11,7 @@ async function extractText(
 ) {
   const lower = fileName.toLowerCase();
   if (mimeType === "application/pdf" || lower.endsWith(".pdf")) {
+    const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
     await parser.destroy();
@@ -90,21 +92,4 @@ export async function processDocument(documentId: string) {
       .eq("id", documentId);
     throw err;
   }
-}
-
-export async function searchKnowledgeBase(
-  orgId: string,
-  query: string,
-  matchCount = 5,
-) {
-  const supabase = createServiceClient();
-  const [embedding] = await embedTexts([query]);
-  const { data, error } = await supabase.rpc("match_document_chunks", {
-    query_embedding: JSON.stringify(embedding),
-    match_org_id: orgId,
-    match_count: matchCount,
-  });
-
-  if (error) throw error;
-  return data ?? [];
 }
