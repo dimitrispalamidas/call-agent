@@ -9,7 +9,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_1px_0_rgba(20,32,26,0.04)] ${className}`}
+      className={`rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 ${className}`}
     >
       {children}
     </div>
@@ -25,10 +25,10 @@ export function Button({
 }) {
   const styles =
     variant === "primary"
-      ? "bg-[var(--brand)] text-white hover:bg-[var(--brand-dark)]"
+      ? "bg-[var(--brand)] text-[var(--on-brand)] hover:bg-[var(--brand-dark)]"
       : variant === "danger"
         ? "bg-[var(--danger)] text-white"
-        : "border border-[var(--line)] bg-white text-[var(--ink)]";
+        : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)]";
 
   return (
     <button
@@ -44,7 +44,7 @@ export function Input({
 }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none ring-[var(--brand)] focus:ring-2 ${className}`}
+      className={`w-full rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-sm outline-none ring-[var(--brand)] focus:ring-2 ${className}`}
       {...props}
     />
   );
@@ -56,7 +56,7 @@ export function Textarea({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={`w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none ring-[var(--brand)] focus:ring-2 ${className}`}
+      className={`w-full rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-sm outline-none ring-[var(--brand)] focus:ring-2 ${className}`}
       {...props}
     />
   );
@@ -79,11 +79,11 @@ export function Badge({
 }) {
   const color =
     tone === "ok"
-      ? "bg-emerald-50 text-[var(--ok)]"
+      ? "bg-[var(--ok-soft)] text-[var(--ok)]"
       : tone === "warn"
-        ? "bg-amber-50 text-[var(--warning)]"
+        ? "bg-[var(--warn-soft)] text-[var(--warning)]"
         : tone === "danger"
-          ? "bg-red-50 text-[var(--danger)]"
+          ? "bg-[var(--danger-soft)] text-[var(--danger)]"
           : "bg-[var(--bg-accent)] text-[var(--muted)]";
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${color}`}>
@@ -104,10 +104,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1
-          className="text-3xl tracking-tight"
-          style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-        >
+        <h1 className="font-display text-3xl tracking-tight">
           {title}
         </h1>
         {description ? (

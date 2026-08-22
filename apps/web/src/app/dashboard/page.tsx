@@ -20,10 +20,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {orgs.map((org) => (
           <Card key={org.id}>
-            <h2
-              className="text-xl"
-              style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-            >
+            <h2 className="font-display text-xl">
               {org.name}
             </h2>
             <p className="mt-1 text-sm text-[var(--muted)]">

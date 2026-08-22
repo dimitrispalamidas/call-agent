@@ -1,24 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f7f5;
-  --bg-accent: #e7f0ea;
-  --ink: #14201a;
-  --muted: #5b6b62;
-  --line: #d5e0d9;
-  --brand: #0f6a4d;
-  --brand-dark: #0b4f3a;
-  --surface: #ffffff;
-  --danger: #b42318;
-  --warning: #b54708;
-  --ok: #067647;
+  --bg: #0b0f0d;
+  --bg-accent: #151a17;
+  --ink: #efece4;
+  --muted: #a8aea6;
+  --line: #3a453e;
+  --brand: #3ee0a0;
+  --brand-dark: #63ebb4;
+  --on-brand: #04110c;
+  --surface: #121714;
+  --danger: #f97066;
+  --danger-soft: #3a1614;
+  --warning: #f7b955;
+  --warn-soft: #3a2c12;
+  --ok: #3ee0a0;
+  --ok-soft: #163528;
 }
 
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--ink);
-  --font-sans: var(--font-source-sans);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-serif);
+  --font-mono: var(--font-code);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
@@ -26,10 +35,10 @@ body {
   min-height: 100%;
   color: var(--ink);
   background:
-    radial-gradient(1200px 500px at 10% -10%, #d9ebe2 0%, transparent 55%),
-    radial-gradient(900px 400px at 100% 0%, #e8f1ff 0%, transparent 45%),
+    radial-gradient(880px 420px at 88% -8%, rgb(62 224 160 / 14%) 0%, transparent 52%),
+    radial-gradient(640px 320px at 0% 110%, rgb(239 236 228 / 5%) 0%, transparent 48%),
     var(--bg);
-  font-family: var(--font-source-sans), "Segoe UI", sans-serif;
+  font-family: var(--font-ui), "Helvetica Neue", sans-serif;
 }
 
 a {
@@ -37,25 +46,57 @@ a {
   text-decoration: none;
 }
 
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 200ms ease;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.btn-primary:hover {
+  background: var(--brand-dark);
+}
+
+.btn-secondary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.btn-secondary:hover {
+  background: #fff;
+}
+
 * {
   box-sizing: border-box;
 }
 
-@keyframes landing-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
+@keyframes landing-wave {
+  0%,
+  100% {
+    transform: scaleY(0.45);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  50% {
+    transform: scaleY(1);
   }
 }
 
-.landing-fade-up {
-  animation: landing-fade-up 0.65s ease-out both;
+.landing-wave {
+  transform-origin: bottom;
+  animation: landing-wave 0.9s ease-in-out infinite;
 }
 
-.landing-fade-up-delay {
-  animation-delay: 0.14s;
+@media (prefers-reduced-motion: reduce) {
+  .landing-wave {
+    animation: none;
+  }
 }

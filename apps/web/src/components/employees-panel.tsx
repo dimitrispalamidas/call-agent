@@ -59,10 +59,7 @@ export function EmployeesPanel({
   return (
     <div className="space-y-4">
       <Card>
-        <h2
-          className="text-xl"
-          style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-        >
+        <h2 className="font-display text-xl">
           Νέος υπάλληλος
         </h2>
         <form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={onCreate}>

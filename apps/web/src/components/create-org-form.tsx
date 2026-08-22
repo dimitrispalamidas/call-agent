@@ -34,10 +34,7 @@ export function CreateOrgForm() {
 
   return (
     <Card>
-      <h2
-        className="text-xl"
-        style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-      >
+      <h2 className="font-display text-xl">
         Νέος οργανισμός
       </h2>
       <form className="mt-4 space-y-3" onSubmit={onSubmit}>

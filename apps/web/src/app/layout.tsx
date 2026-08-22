@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
-import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin", "latin-ext"],
+const display = Source_Serif_4({
+  variable: "--font-serif",
+  subsets: ["latin", "latin-ext", "greek"],
 });
 
-const sans = Source_Sans_3({
-  variable: "--font-source-sans",
+const sans = IBM_Plex_Sans({
+  variable: "--font-ui",
+  subsets: ["latin", "latin-ext", "greek"],
+  weight: ["400", "500", "600"],
+});
+
+const mono = IBM_Plex_Mono({
+  variable: "--font-code",
   subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="el" className={`${display.variable} ${sans.variable} h-full`}>
+    <html
+      lang="el"
+      className={`${display.variable} ${sans.variable} ${mono.variable} h-full`}
+    >
       <body className="min-h-full antialiased">{children}</body>
     </html>
   );

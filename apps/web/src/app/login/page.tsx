@@ -34,10 +34,7 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6">
       <Card className="w-full">
-        <h1
-          className="text-2xl"
-          style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-        >
+        <h1 className="font-display text-2xl">
           Σύνδεση
         </h1>
         <p className="mt-1 text-sm text-[var(--muted)]">

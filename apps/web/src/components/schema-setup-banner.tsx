@@ -2,16 +2,13 @@ import { Card } from "@/components/ui";
 
 export function SchemaSetupBanner() {
   return (
-    <Card className="mb-6 border-amber-200 bg-amber-50">
-      <h2
-        className="text-xl"
-        style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-      >
+    <Card className="mb-6 border-[var(--warning)]/30 bg-[var(--warn-soft)]">
+      <h2 className="font-display text-xl">
         Λείπει το database schema
       </h2>
       <p className="mt-2 text-sm text-[var(--muted)]">
         Στο Supabase SQL Editor τρέξε το αρχείο{" "}
-        <code className="rounded bg-white px-1 py-0.5">
+        <code className="rounded bg-[var(--bg-accent)] px-1 py-0.5">
           supabase/migrations/20260731120000_initial.sql
         </code>{" "}
         και μετά κάνε refresh.

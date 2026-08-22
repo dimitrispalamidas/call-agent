@@ -20,15 +20,12 @@ export default async function DashboardLayout({
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-6xl gap-8 px-6 py-8">
       <aside className="w-56 shrink-0">
-        <div
-          className="text-xl font-semibold"
-          style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-        >
+        <div className="font-display text-xl font-semibold">
           CallAgent
         </div>
         <p className="mt-1 truncate text-xs text-[var(--muted)]">{user.email}</p>
         <nav className="mt-8 flex flex-col gap-1 text-sm">
-          <Link className="rounded-lg px-3 py-2 hover:bg-white" href="/dashboard">
+          <Link className="rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]" href="/dashboard">
             Οργανισμοί
           </Link>
           {orgs.map((org) => (
@@ -37,31 +34,31 @@ export default async function DashboardLayout({
                 {org.name}
               </div>
               <Link
-                className="block rounded-lg px-3 py-2 hover:bg-white"
+                className="block rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]"
                 href={`/dashboard/orgs/${org.id}`}
               >
                 Επισκόπηση
               </Link>
               <Link
-                className="block rounded-lg px-3 py-2 hover:bg-white"
+                className="block rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]"
                 href={`/dashboard/orgs/${org.id}/knowledge`}
               >
                 Knowledge base
               </Link>
               <Link
-                className="block rounded-lg px-3 py-2 hover:bg-white"
+                className="block rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]"
                 href={`/dashboard/orgs/${org.id}/employees`}
               >
                 Υπάλληλοι
               </Link>
               <Link
-                className="block rounded-lg px-3 py-2 hover:bg-white"
+                className="block rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]"
                 href={`/dashboard/orgs/${org.id}/calls`}
               >
                 Κλήσεις
               </Link>
               <Link
-                className="block rounded-lg px-3 py-2 hover:bg-white"
+                className="block rounded-lg px-3 py-2 hover:bg-[var(--bg-accent)]"
                 href={`/dashboard/orgs/${org.id}/settings`}
               >
                 Ρυθμίσεις
