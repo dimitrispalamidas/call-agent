@@ -28,7 +28,7 @@ export default async function DashboardPage() {
             </p>
             <Link
               href={`/dashboard/orgs/${org.id}`}
-              className="mt-4 inline-block text-sm font-medium text-[var(--brand)]"
+              className="mt-4 inline-block text-sm font-medium text-[var(--brand-ink)]"
             >
               Άνοιγμα →
             </Link>

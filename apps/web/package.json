@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "demo:audio": "node --env-file=../../.env.local --env-file=.env.local scripts/generate-demo-audio.mjs"
   },
   "dependencies": {
     "@call-agent/db": "workspace:*",

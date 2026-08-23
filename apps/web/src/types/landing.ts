@@ -35,4 +35,5 @@ export interface LandingCallRow {
 export interface DemoUtterance {
   speaker: LandingSpeaker;
   text: string;
+  src: string;
 }

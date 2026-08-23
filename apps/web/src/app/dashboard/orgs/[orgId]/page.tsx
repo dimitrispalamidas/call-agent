@@ -46,7 +46,7 @@ export default async function OrgOverviewPage({
           <div className="text-sm text-[var(--muted)]">Documents</div>
           <div className="mt-2 text-3xl">{docCount ?? 0}</div>
           <Link
-            className="mt-3 inline-block text-sm text-[var(--brand)]"
+            className="mt-3 inline-block text-sm text-[var(--brand-ink)]"
             href={`/dashboard/orgs/${orgId}/knowledge`}
           >
             Διαχείριση KB
@@ -56,7 +56,7 @@ export default async function OrgOverviewPage({
           <div className="text-sm text-[var(--muted)]">Υπάλληλοι</div>
           <div className="mt-2 text-3xl">{employeeCount ?? 0}</div>
           <Link
-            className="mt-3 inline-block text-sm text-[var(--brand)]"
+            className="mt-3 inline-block text-sm text-[var(--brand-ink)]"
             href={`/dashboard/orgs/${orgId}/employees`}
           >
             Διαχείριση υπαλλήλων
@@ -66,7 +66,7 @@ export default async function OrgOverviewPage({
           <div className="text-sm text-[var(--muted)]">Κλήσεις</div>
           <div className="mt-2 text-3xl">{callCount ?? 0}</div>
           <Link
-            className="mt-3 inline-block text-sm text-[var(--brand)]"
+            className="mt-3 inline-block text-sm text-[var(--brand-ink)]"
             href={`/dashboard/orgs/${orgId}/calls`}
           >
             Ιστορικό κλήσεων

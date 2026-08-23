@@ -45,7 +45,7 @@ export default function SignupPage() {
         </h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Έχεις ήδη λογαριασμό;{" "}
-          <Link href="/login" className="text-[var(--brand)] underline">
+          <Link href="/login" className="text-[var(--brand-ink)] underline">
             Σύνδεση
           </Link>
         </p>

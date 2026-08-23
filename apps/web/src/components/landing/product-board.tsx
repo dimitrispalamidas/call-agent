@@ -18,7 +18,7 @@ const calls: LandingCallRow[] = [
     fromNumber: "+30 694 112 2301",
     toNumber: "+30 210 123 4567",
     startedAt: "Σήμερα, 14:02",
-    summary: "Ώρες λειτουργίας · μεταφορά στη ρεσεψιόν",
+    summary: "Ώρες λειτουργίας · μεταφορά στη γραμματεία",
     status: LANDING_CALL_STATUS.TRANSFERRED,
   },
   {

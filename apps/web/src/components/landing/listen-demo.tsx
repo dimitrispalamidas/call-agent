@@ -1,83 +1,110 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  DEMO_CALL_SCRIPT,
+  DEMO_CALL_TURN_GAP_MS,
+} from "@/lib/demo-call";
 import {
   LANDING_SPEAKER,
-  type DemoUtterance,
   type LandingSpeaker,
 } from "@/types/landing";
-
-const script: DemoUtterance[] = [
-  {
-    speaker: LANDING_SPEAKER.CALLER,
-    text: "Τι ώρα ανοίγετε αύριο;",
-  },
-  {
-    speaker: LANDING_SPEAKER.AGENT,
-    text: "Ανοίγουμε 09:00 έως 17:00. Θέλετε να σας μεταφέρω στη ρεσεψιόν;",
-  },
-];
 
 const barHeights = [28, 52, 36, 64, 44, 72, 40, 58, 32, 68, 48, 60];
 
 export function ListenDemo() {
   const [playing, setPlaying] = useState(false);
   const [speaker, setSpeaker] = useState<LandingSpeaker | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const gapTimerRef = useRef<number | null>(null);
+  const playIdRef = useRef(0);
 
   useEffect(() => {
-    window.speechSynthesis.getVoices();
-    const onVoices = () => {
-      window.speechSynthesis.getVoices();
-    };
-    window.speechSynthesis.addEventListener("voiceschanged", onVoices);
+    const preloads = DEMO_CALL_SCRIPT.map((line) => {
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.src = line.src;
+      return audio;
+    });
+
     return () => {
-      window.speechSynthesis.removeEventListener("voiceschanged", onVoices);
-      window.speechSynthesis.cancel();
+      playIdRef.current += 1;
+      if (gapTimerRef.current !== null) {
+        window.clearTimeout(gapTimerRef.current);
+      }
+      audioRef.current?.pause();
+      for (const audio of preloads) {
+        audio.removeAttribute("src");
+      }
     };
   }, []);
 
-  function stop() {
-    window.speechSynthesis.cancel();
+  function clearGap() {
+    if (gapTimerRef.current !== null) {
+      window.clearTimeout(gapTimerRef.current);
+      gapTimerRef.current = null;
+    }
+  }
+
+  function stopPlayback() {
+    playIdRef.current += 1;
+    clearGap();
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    audioRef.current = null;
     setPlaying(false);
     setSpeaker(null);
   }
 
-  function play() {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    setPlaying(true);
-
-    const voices = window.speechSynthesis.getVoices();
-    const greekVoice =
-      voices.find((voice) => voice.lang.toLowerCase().startsWith("el")) ?? null;
-
-    let index = 0;
-
-    const speakNext = () => {
-      const line = script[index];
-      if (!line) {
+  function playLine(index: number, playId: number) {
+    const line = DEMO_CALL_SCRIPT[index];
+    if (!line || playIdRef.current !== playId) {
+      if (playIdRef.current === playId) {
         setPlaying(false);
         setSpeaker(null);
+      }
+      return;
+    }
+
+    setSpeaker(line.speaker);
+    const audio = new Audio(line.src);
+    audio.preload = "auto";
+    audioRef.current = audio;
+
+    audio.onended = () => {
+      if (playIdRef.current !== playId) return;
+      const next = index + 1;
+      if (!DEMO_CALL_SCRIPT[next]) {
+        stopPlayback();
         return;
       }
-
-      setSpeaker(line.speaker);
-      const utterance = new SpeechSynthesisUtterance(line.text);
-      utterance.lang = "el-GR";
-      utterance.rate = line.speaker === LANDING_SPEAKER.CALLER ? 1 : 0.95;
-      if (greekVoice) utterance.voice = greekVoice;
-      utterance.onend = () => {
-        index += 1;
-        speakNext();
-      };
-      utterance.onerror = () => {
-        setPlaying(false);
-        setSpeaker(null);
-      };
-      window.speechSynthesis.speak(utterance);
+      gapTimerRef.current = window.setTimeout(() => {
+        if (playIdRef.current !== playId) return;
+        playLine(next, playId);
+      }, DEMO_CALL_TURN_GAP_MS);
     };
 
-    speakNext();
+    audio.onerror = () => {
+      if (playIdRef.current !== playId) return;
+      stopPlayback();
+    };
+
+    void audio.play().catch(() => {
+      if (playIdRef.current === playId) stopPlayback();
+    });
+  }
+
+  function play() {
+    stopPlayback();
+    const playId = playIdRef.current + 1;
+    playIdRef.current = playId;
+    setPlaying(true);
+    playLine(0, playId);
   }
 
   const speakerLabel =
@@ -107,20 +134,20 @@ export function ListenDemo() {
 
       <WaveformBars active={playing} />
 
-      <p className="mt-3 text-sm text-[var(--muted)]">
+      <p className="mt-3 text-sm text-[var(--muted)]" aria-live="polite">
         {playing ? `${speakerLabel} μιλάει` : "Άκου ένα πραγματικό σενάριο κλήσης"}
       </p>
 
       <button
         type="button"
-        onClick={playing ? stop : play}
+        onClick={playing ? stopPlayback : play}
         className="btn-primary mt-4 px-5 py-3"
       >
         {playing ? "Στοπ" : "Άκου την κλήση"}
       </button>
 
       <p className="mt-4 text-xs text-[var(--muted)]">
-        Αν χρειαστεί, μεταφορά στον Νίκο · Reception
+        Αν χρειαστεί, μεταφορά στη γραμματεία · Ιατρείο
       </p>
     </article>
   );

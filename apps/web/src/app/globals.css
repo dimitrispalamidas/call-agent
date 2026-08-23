@@ -1,21 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0f0d;
-  --bg-accent: #151a17;
-  --ink: #efece4;
-  --muted: #a8aea6;
-  --line: #3a453e;
-  --brand: #3ee0a0;
-  --brand-dark: #63ebb4;
-  --on-brand: #04110c;
-  --surface: #121714;
-  --danger: #f97066;
-  --danger-soft: #3a1614;
-  --warning: #f7b955;
-  --warn-soft: #3a2c12;
-  --ok: #3ee0a0;
-  --ok-soft: #163528;
+  --bg: #f5f0e6;
+  --bg-accent: #ebe6d8;
+  --ink: #2a261f;
+  --muted: #6b6458;
+  --line: #d4cdc0;
+  --brand: #2f7d72;
+  --brand-dark: #25665d;
+  --brand-ink: #1f5f56;
+  --on-brand: #f7f3ea;
+  --surface: #fffcf6;
+  --danger: #c24b3c;
+  --danger-soft: #f8e8e4;
+  --warning: #a5761c;
+  --warn-soft: #f6edd4;
+  --ok: #2f7d72;
+  --ok-soft: #dcecea;
+  --shadow: 0 14px 36px -24px rgb(42 38 31 / 28%);
 }
 
 @theme inline {
@@ -27,7 +29,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -35,8 +37,8 @@ body {
   min-height: 100%;
   color: var(--ink);
   background:
-    radial-gradient(880px 420px at 88% -8%, rgb(62 224 160 / 14%) 0%, transparent 52%),
-    radial-gradient(640px 320px at 0% 110%, rgb(239 236 228 / 5%) 0%, transparent 48%),
+    radial-gradient(900px 460px at 92% -10%, rgb(47 125 114 / 14%) 0%, transparent 55%),
+    radial-gradient(560px 280px at 4% 108%, rgb(196 154 90 / 14%) 0%, transparent 50%),
     var(--bg);
   font-family: var(--font-ui), "Helvetica Neue", sans-serif;
 }
@@ -51,11 +53,12 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1.5px solid transparent;
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.2;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
 .btn-primary {
@@ -68,12 +71,14 @@ a {
 }
 
 .btn-secondary {
-  background: var(--ink);
-  color: var(--bg);
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 .btn-secondary:hover {
-  background: #fff;
+  background: var(--bg-accent);
+  border-color: var(--ink);
 }
 
 * {
